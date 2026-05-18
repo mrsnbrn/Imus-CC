@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Portal | Imus Chemotherapy Center</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons (via script for convenience in single HTML) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .brand-teal { background-color: #0F6E56; }
+        .brand-teal-text { color: #0F6E56; }
+        .brand-amber { background-color: #EF9F27; }
+        .brand-amber-text { color: #EF9F27; }
+        
+        .btn-teal {
+            background-color: #0F6E56;
+            color: white;
+            transition: all 0.2s;
+        }
+        .btn-teal:hover {
+            background-color: #0d5f4a;
+            transform: translateY(-1px);
+        }
+        .btn-amber {
+            background-color: #EF9F27;
+            color: white;
+            transition: all 0.2s;
+        }
+        .btn-amber:hover {
+            background-color: #d88e21;
+            transform: translateY(-1px);
+        }
+
+        .view-transition {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .hidden-view {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        .active-view {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border: 1px solid #f1f5f9;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Loader */
+        #loader {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 9999;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 10000;
+            transform: translateY(100px);
+            transition: transform 0.3s ease;
+        }
+        #toast.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="h-full">
+
+    <!-- Loading Spinner -->
+    <div id="loader" class="flex flex-col items-center justify-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0F6E56]"></div>
+        <p class="mt-4 font-medium text-slate-600">Processing...</p>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="px-6 py-4 rounded-xl shadow-2xl text-white flex items-center gap-3">
+        <span id="toast-icon"></span>
+        <span id="toast-message" class="font-medium"></span>
+    </div>
+
+    <!-- VIEW 1: LANDING -->
+    <div id="view-landing" class="view-transition active-view min-h-screen flex flex-col items-center justify-center p-6 sm:p-12">
+        <div class="max-w-4xl w-full text-center mb-12">
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <div class="w-16 h-16 brand-teal rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <i data-lucide="shield-plus" class="w-10 h-10"></i>
+                </div>
+                <div class="text-left">
+                    <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 leading-none">ICC</h1>
+                    <p class="text-brand-teal font-bold text-sm tracking-widest uppercase mt-1">Patient Portal</p>
+                </div>
+            </div>
+            <h2 class="text-4xl font-light text-slate-800 mb-4">Dedicated to your <span class="font-bold text-slate-900 underline decoration-amber-400">recovery</span>.</h2>
+            <p class="text-slate-500 text-lg max-w-xl mx-auto">Access your medical history, manage appointments, and stay connected with your care team in one secure place.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full mb-12">
+            <!-- New Patient Card -->
+            <div class="card p-8 flex flex-col items-center text-center group cursor-pointer hover:border-teal-200 transition-colors" onclick="showView('registration')">
+                <div class="w-16 h-16 bg-teal-50 text-brand-teal rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110">
+                    <i data-lucide="user-plus" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2">New Patient?</h3>
+                <p class="text-slate-500 mb-8">Ready to start your journey with us? Create your secure account in just a few minutes.</p>
+                <button class="btn-teal w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 mt-auto">
+                    Register Now <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Returning Patient Card -->
+            <div class="card p-8 flex flex-col items-center text-center group cursor-pointer hover:border-amber-200 transition-colors" onclick="openLoginModal()">
+                <div class="w-16 h-16 bg-amber-50 text-brand-amber rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110">
+                    <i data-lucide="lock" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2">Returning Patient?</h3>
+                <p class="text-slate-500 mb-8">Already have an account? Log in to view your records and manage your care.</p>
+                <button class="btn-amber w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 mt-auto">
+                    Log In <i data-lucide="log-in" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center gap-8">
+            <a href="index.html" class="text-slate-400 hover:text-slate-600 font-medium flex items-center gap-1 transition-colors">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i> Back to Main Site
+            </a>
+            
+            <div class="flex flex-wrap justify-center gap-8 opacity-60">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i> Your data is private
+                </div>
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    <i data-lucide="award" class="w-4 h-4"></i> DOH Licensed
+                </div>
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    <i data-lucide="key" class="w-4 h-4"></i> Secure & Confidential
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 2: REGISTRATION -->
+    <div id="view-registration" class="view-transition hidden-view min-h-screen py-12 px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex items-center justify-between mb-8">
+                <button onclick="showView('landing')" class="text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-2 font-medium">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i> Back to Home
+                </button>
+                <h1 class="text-2xl font-extrabold text-slate-900">New Patient Registration</h1>
+            </div>
+
+            <form id="registration-form" onsubmit="handleRegistration(event)" class="space-y-8">
+                <!-- PERSONAL INFO -->
+                <div class="card p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 bg-teal-50 text-brand-teal rounded-lg flex items-center justify-center">
+                            <i data-lucide="user" class="w-5 h-5"></i>
+                        </div>
+                        <h2 class="text-lg font-bold text-slate-900 uppercase tracking-wide">Personal Information</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase letter-spacing">First Name</label>
+                            <input type="text" name="firstName" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Middle Name</label>
+                            <input type="text" name="middleName" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Last Name</label>
+                            <input type="text" name="lastName" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Date of Birth</label>
+                            <input type="date" name="dob" id="reg-dob" required onchange="calculateAgeDisplay(this)" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                            <p id="age-display" class="text-xs text-slate-400 mt-1 font-medium"></p>
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Sex</label>
+                            <div class="flex gap-4 py-3">
+                                <label class="flex items-center gap-2 cursor-pointer text-sm font-medium">
+                                    <input type="radio" name="sex" value="Male" required class="w-4 h-4 accent-[#0F6E56]"> Male
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-sm font-medium">
+                                    <input type="radio" name="sex" value="Female" class="w-4 h-4 accent-[#0F6E56]"> Female
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer text-sm font-medium">
+                                    <input type="radio" name="sex" value="Prefer not to say" class="w-4 h-4 accent-[#0F6E56]"> Other
+                                </label>
+                            </div>
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Civil Status</label>
+                            <select name="civilStatus" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none bg-white">
+                                <option value="">Select</option>
+                                <option value="Single">Single</option>
+                                <option value="Married">Married</option>
+                                <option value="Widowed">Widowed</option>
+                                <option value="Separated">Separated</option>
+                            </select>
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Religion</label>
+                            <input type="text" name="religion" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Nationality</label>
+                            <input type="text" name="nationality" value="Filipino" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Blood Type</label>
+                            <select name="bloodType" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none bg-white">
+                                <option value="Unknown">Unknown</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTACT INFO -->
+                <div class="card p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 bg-teal-50 text-brand-teal rounded-lg flex items-center justify-center">
+                            <i data-lucide="phone" class="w-5 h-5"></i>
+                        </div>
+                        <h2 class="text-lg font-bold text-slate-900 uppercase tracking-wide">Contact Information</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Mobile Number</label>
+                            <input type="text" name="mobile" placeholder="09XX-XXX-XXXX" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Email Address</label>
+                            <input type="email" name="email" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1 mb-6">
+                        <label class="text-xs font-bold text-slate-500 uppercase">Complete Address</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" name="house" placeholder="House/Unit No. + Street" required class="px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                            <input type="text" name="barangay" placeholder="Barangay" required class="px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                            <input type="text" name="city" placeholder="City/Municipality" required class="px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                            <input type="text" name="province" placeholder="Province" required class="px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                        </div>
+                        <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                    </div>
+
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                        <h3 class="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                            <i data-lucide="alert-circle" class="w-4 h-4 text-brand-amber"></i> Emergency Contact
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase">Name</label>
+                                <input type="text" name="emergencyName" required class="w-full px-4 py-2 rounded-lg border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-[#0F6E56]">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase">Number</label>
+                                <input type="text" name="emergencyNumber" required class="w-full px-4 py-2 rounded-lg border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-[#0F6E56]">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-400 uppercase">Relationship</label>
+                                <input type="text" name="emergencyRelationship" required class="w-full px-4 py-2 rounded-lg border border-slate-200 bg-white outline-none focus:ring-2 focus:ring-[#0F6E56]">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MEDICAL INFO -->
+                <div class="card p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 bg-teal-50 text-brand-teal rounded-lg flex items-center justify-center">
+                            <i data-lucide="activity" class="w-5 h-5"></i>
+                        </div>
+                        <h2 class="text-lg font-bold text-slate-900 uppercase tracking-wide">Medical Information</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Primary Diagnosis</label>
+                            <input type="text" name="diagnosis" required placeholder="e.g. Breast Cancer Stage II" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Date of Diagnosis</label>
+                            <input type="date" name="diagnosisDate" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Current Medications</label>
+                            <textarea name="medications" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none resize-none"></textarea>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Known Allergies</label>
+                            <textarea name="allergies" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">PhilHealth Number</label>
+                            <input type="text" name="philhealth" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">HMO Provider & Card No.</label>
+                            <input type="text" name="hmo" placeholder="e.g. Maxicare - 12345678" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] transition-all outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACCOUNT SETUP -->
+                <div class="card p-8">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 bg-teal-50 text-brand-teal rounded-lg flex items-center justify-center">
+                            <i data-lucide="key" class="w-5 h-5"></i>
+                        </div>
+                        <h2 class="text-lg font-bold text-slate-900 uppercase tracking-wide">Account Security</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Username</label>
+                            <input type="text" name="username" required minlength="6" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] outline-none">
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Password</label>
+                            <div class="relative">
+                                <input type="password" name="password" id="reg-password" required minlength="8" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] outline-none">
+                                <button type="button" onclick="togglePassword('reg-password')" class="absolute right-4 top-3.5 text-slate-400 transform scale-75">
+                                    <i data-lucide="eye"></i>
+                                </button>
+                            </div>
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Confirm Password</label>
+                            <input type="password" name="confirmPassword" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#0F6E56] outline-none">
+                            <p class="error h-4 text-[10px] text-red-500 font-bold uppercase"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center pt-8">
+                    <p class="text-xs text-slate-400 mb-6 max-w-lg text-center font-medium">By registering, you agree to our Terms of Service and Privacy Policy. All your data is securely stored and encrypted.</p>
+                    <button type="submit" id="reg-submit-btn" class="btn-teal px-12 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-teal-900/10">
+                        Create My Account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- VIEW 3: DASHBOARD -->
+    <div id="view-dashboard" class="view-transition hidden-view min-h-screen flex flex-col bg-slate-50">
+        <!-- TOP NAV -->
+        <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-50">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 brand-teal rounded-lg flex items-center justify-center text-white font-bold text-xl">I</div>
+                <div class="hidden sm:block">
+                    <h1 class="text-lg font-bold text-slate-900 leading-tight">Imus Chemotherapy Center</h1>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Health Portal</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-3 sm:pr-6 sm:border-r border-slate-200">
+                    <div class="text-right hidden sm:block">
+                        <p id="user-display-name" class="text-sm font-bold text-slate-900">Patient Name</p>
+                        <p id="user-display-id" class="text-[10px] text-brand-teal font-mono font-bold bg-teal-50 px-2 rounded-full inline-block mt-0.5">ID: ICC-2025-XXXX</p>
+                    </div>
+                    <div id="user-avatar" class="w-10 h-10 bg-teal-100 rounded-full border-2 border-brand-teal flex items-center justify-center text-brand-teal font-bold uppercase">
+                        PN
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <button class="relative p-2 text-slate-400 hover:text-brand-teal transition-colors">
+                        <i data-lucide="bell" class="w-6 h-6"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+                    </button>
+                    <button onclick="handleLogout()" class="ml-2 px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold uppercase tracking-wider text-slate-500 hover:bg-slate-50 transition-colors">
+                        Log Out
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD BODY -->
+        <div class="flex grow h-[calc(100vh-80px)] overflow-hidden">
+            <!-- SIDEBAR NAV -->
+            <nav id="sidebar" class="w-64 bg-white border-r border-slate-200 p-6 flex-col gap-2 shrink-0 hidden md:flex">
+                <a href="#profile" onclick="handleTabClick(event, 'profile')" class="tab-link flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all" data-tab="profile">
+                    <i data-lucide="user" class="w-5 h-5"></i> My Profile
+                </a>
+                <a href="#visits" onclick="handleTabClick(event, 'visits')" class="tab-link flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all" data-tab="visits">
+                    <i data-lucide="history" class="w-5 h-5"></i> Visit History
+                </a>
+                <a href="#appointments" onclick="handleTabClick(event, 'appointments')" class="tab-link flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all" data-tab="appointments">
+                    <i data-lucide="calendar" class="w-5 h-5"></i> Appointments
+                </a>
+                <a href="#documents" onclick="handleTabClick(event, 'documents')" class="tab-link flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all" data-tab="documents">
+                    <i data-lucide="file-text" class="w-5 h-5"></i> Documents
+                </a>
+                <a href="#contact" onclick="handleTabClick(event, 'contact')" class="tab-link flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all" data-tab="contact">
+                    <i data-lucide="help-circle" class="w-5 h-5"></i> Help Center
+                </a>
+
+                <div class="mt-auto p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                    <p class="text-[10px] font-bold text-brand-amber uppercase tracking-widest mb-1">Emergency</p>
+                    <p class="text-xs font-medium text-slate-600 mb-2">Need immediate help?</p>
+                    <p class="text-lg font-extrabold text-slate-900">0922-888-4222</p>
+                </div>
+            </nav>
+
+            <!-- TAB CONTENT WRAPPER -->
+            <main class="grow overflow-y-auto p-8" id="tab-content">
+                <!-- Content will be injected here via JS -->
+            </main>
+        </div>
+
+        <!-- MOBILE NAV BAR (Bottom) -->
+        <nav id="mobile-nav" class="md:hidden bg-white border-t border-slate-200 flex items-center justify-around h-16 px-4 py-2 sticky bottom-0 z-50">
+            <a href="#profile" onclick="handleTabClick(event, 'profile')" class="tab-link flex flex-col items-center justify-center gap-1 transition-all" data-tab="profile">
+                <i data-lucide="user" class="w-5 h-5"></i>
+                <span class="text-[10px] uppercase font-bold">Profile</span>
+            </a>
+            <a href="#visits" onclick="handleTabClick(event, 'visits')" class="tab-link flex flex-col items-center justify-center gap-1 transition-all" data-tab="visits">
+                <i data-lucide="history" class="w-5 h-5"></i>
+                <span class="text-[10px] uppercase font-bold">Visits</span>
+            </a>
+            <a href="#appointments" onclick="handleTabClick(event, 'appointments')" class="tab-link flex flex-col items-center justify-center gap-1 transition-all" data-tab="appointments">
+                <i data-lucide="calendar" class="w-5 h-5"></i>
+                <span class="text-[10px] uppercase font-bold">Booking</span>
+            </a>
+            <a href="#contact" onclick="handleTabClick(event, 'contact')" class="tab-link flex flex-col items-center justify-center gap-1 transition-all" data-tab="contact">
+                <i data-lucide="message-square" class="w-5 h-5"></i>
+                <span class="text-[10px] uppercase font-bold">Help</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div id="login-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6 bg-slate-900/50 backdrop-blur-sm">
+        <div class="card max-w-md w-full p-8 relative animate-in zoom-in duration-300">
+            <button onclick="closeLoginModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <div class="mb-8 text-center">
+                <div class="w-12 h-12 bg-amber-50 text-brand-amber rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="lock" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-900">Welcome Back</h3>
+                <p class="text-slate-500 font-medium">Log in to your patient account</p>
+            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-6">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Username</label>
+                    <input type="text" id="login-username" required class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-[#EF9F27]">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Password</label>
+                    <div class="relative">
+                        <input type="password" id="login-password" required class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-[#EF9F27]">
+                        <button type="button" onclick="togglePassword('login-password')" class="absolute right-4 top-3.5 text-slate-400 transform scale-75">
+                            <i data-lucide="eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="login-error" class="hidden text-xs font-bold text-red-500 uppercase text-center bg-red-50 p-3 rounded-lg border border-red-100">
+                    Invalid username or password.
+                </div>
+                <button type="submit" class="btn-amber w-full py-4 rounded-xl font-bold text-lg shadow-xl shadow-amber-900/10 mt-4">
+                    Access Portal
+                </button>
+            </form>
+            <p class="mt-8 text-center text-sm text-slate-400 font-medium">
+                Don't have an account? <button onclick="closeLoginModal(); showView('registration')" class="text-brand-teal font-bold hover:underline">Register Now</button>
+            </p>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL (Registration) -->
+    <div id="success-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-6 bg-slate-900/50 backdrop-blur-sm">
+        <div class="card max-w-md w-full p-10 text-center animate-in zoom-in duration-300">
+            <div class="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="check-circle" class="w-12 h-12"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-900 mb-2">Registration Successful</h3>
+            <p class="text-slate-500 mb-8 font-medium">Your account has been created securely. Your unique Patient ID is:</p>
+            
+            <div class="bg-teal-50 border-2 border-dashed border-brand-teal p-6 rounded-2xl mb-8">
+                <p id="new-patient-id" class="text-3xl font-mono font-extrabold text-brand-teal tracking-tighter">ICC-2025-0000</p>
+            </div>
+            
+            <button onclick="closeSuccessModal()" class="btn-teal w-full py-4 rounded-xl font-bold text-lg">
+                Go to My Dashboard
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // Init Lucide Icons
+        lucide.createIcons();
+
+        // ---------------------------------------------------------
+        // DATA LAYER
+        // ---------------------------------------------------------
+
+        const getPatients = () => JSON.parse(localStorage.getItem('icc_patients') || '[]');
+        const savePatients = (patients) => localStorage.setItem('icc_patients', JSON.stringify(patients));
+        
+        const getVisits = () => JSON.parse(localStorage.getItem('icc_visits') || '[]');
+        const saveVisits = (visits) => localStorage.setItem('icc_visits', JSON.stringify(visits));
+
+        const getAppointments = () => JSON.parse(localStorage.getItem('icc_appointments') || '[]');
+        const saveAppointments = (apps) => localStorage.setItem('icc_appointments', JSON.stringify(apps));
+
+        const getCurrentUser = () => localStorage.getItem('icc_current_user');
+        const setCurrentUser = (id) => localStorage.setItem('icc_current_user', id);
+        const clearCurrentUser = () => localStorage.removeItem('icc_current_user');
+
+        // Obfuscation (Basic)
+        const hashPass = (pass) => btoa(pass); 
+
+        // ---------------------------------------------------------
+        // SEED DATA
+        // ---------------------------------------------------------
+
+        function seedData() {
+            if (localStorage.getItem('icc_demo_seeded')) return;
+
+            const demoPatient = {
+                id: "ICC-2025-4821",
+                username: "demo",
+                passwordHash: hashPass("Demo1234"),
+                firstName: "Maria Clara",
+                middleName: "L.",
+                lastName: "Dela Cruz",
+                dob: "1994-06-15",
+                sex: "Female",
+                civilStatus: "Single",
+                religion: "Roman Catholic",
+                nationality: "Filipino",
+                mobile: "0917-123-4567",
+                email: "maria.clara@example.com",
+                address: { house: "Unit 402", barangay: "Bayanan", city: "Bacoor", province: "Cavite" },
+                emergency: { name: "Juan Dela Cruz", number: "0918-999-0000", relationship: "Father" },
+                medical: { diagnosis: "Breast Cancer Stage II", diagnosisDate: "2025-01-10", medications: "Tamoxifen, Multivitamins", allergies: "None", bloodType: "O+" },
+                insurance: { philhealth: "1900-1234-5678", hmo: "Maxicare - 14235" },
+                registeredAt: new Date().toISOString(),
+                profileComplete: 85
+            };
+
+            const demoVisits = [
+                {
+                    id: "VIS-1001", patientId: demoPatient.id, date: "2025-05-18",
+                    visitType: "Chemotherapy Session", physician: "Dr. Reyes, Oncologist",
+                    treatment: "AC-T Regimen Cycle 4", notes: "Patient tolerated well, slight fatigue.", status: "Completed",
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: "VIS-1002", patientId: demoPatient.id, date: "2025-04-27",
+                    visitType: "Chemotherapy Session", physician: "Dr. Reyes, Oncologist",
+                    treatment: "AC-T Regimen Cycle 3", notes: "Normal CBC results.", status: "Completed",
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: "VIS-1003", patientId: demoPatient.id, date: "2025-04-06",
+                    visitType: "Lab Results Review", physician: "Dr. Mercado, Internal Med",
+                    treatment: "Blood Work Review", notes: "Platelets slightly low but acceptable.", status: "Completed",
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: "VIS-1004", patientId: demoPatient.id, date: "2025-03-16",
+                    visitType: "Chemotherapy Session", physician: "Dr. Reyes, Oncologist",
+                    treatment: "AC-T Regimen Cycle 2", notes: "Initial side effects discussed.", status: "Completed",
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: "VIS-1005", patientId: demoPatient.id, date: "2025-02-23",
+                    visitType: "Initial Consultation", physician: "Dr. Reyes, Oncologist",
+                    treatment: "Treatment Planning", notes: "Port-a-cath insertion scheduled.", status: "Completed",
+                    createdAt: new Date().toISOString()
+                }
+            ];
+
+            const demoAppointments = [
+                {
+                    id: "APT-2001", patientId: demoPatient.id, 
+                    preferredDate: "2025-06-08", preferredTime: "09:00 AM",
+                    visitType: "Chemotherapy Session", notes: "Cycle 5",
+                    status: "Confirmed", createdAt: new Date().toISOString()
+                }
+            ];
+
+            savePatients([demoPatient]);
+            saveVisits(demoVisits);
+            saveAppointments(demoAppointments);
+            localStorage.setItem('icc_demo_seeded', 'true');
+        }
+
+        // ---------------------------------------------------------
+        // VIEW NAVIGATION
+        // ---------------------------------------------------------
+
+        function showView(viewId) {
+            const views = ['landing', 'registration', 'dashboard'];
+            views.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                if (v === viewId) {
+                    el.classList.remove('hidden-view');
+                    el.classList.add('active-view');
+                } else {
+                    el.classList.add('hidden-view');
+                    el.classList.remove('active-view');
+                }
+            });
+            window.scrollTo(0, 0);
+            
+            if (viewId === 'dashboard') {
+                const hash = window.location.hash.replace('#', '') || 'profile';
+                showTab(hash);
+                updateUserProfileDisplay();
+            }
+        }
+
+        function showTab(tabId) {
+            const links = document.querySelectorAll('.tab-link');
+            links.forEach(l => {
+                if (l.dataset.tab === tabId) {
+                    l.classList.add('brand-teal', 'text-white', 'shadow-lg', 'shadow-teal-900/10');
+                    l.classList.remove('text-slate-500', 'hover:bg-slate-50');
+                } else {
+                    l.classList.remove('brand-teal', 'text-white', 'shadow-lg', 'shadow-teal-900/10');
+                    l.classList.add('text-slate-500', 'hover:bg-slate-50');
+                }
+            });
+
+            const content = document.getElementById('tab-content');
+            renderTabContent(tabId, content);
+            lucide.createIcons();
+        }
+
+        function handleTabClick(e, tabId) {
+            e.preventDefault();
+            window.location.hash = tabId;
+            showTab(tabId);
+        }
+
+        // ---------------------------------------------------------
+        // UI HELPERS
+        // ---------------------------------------------------------
+
+        function togglePassword(id) {
+            const el = document.getElementById(id);
+            el.type = el.type === 'password' ? 'text' : 'password';
+        }
+
+        function calculateAge(dob) {
+            const diff = Date.now() - new Date(dob).getTime();
+            const ageDate = new Date(diff);
+            return Math.abs(ageDate.getUTCFullYear() - 1970);
+        }
+
+        function calculateAgeDisplay(input) {
+            const display = document.getElementById('age-display');
+            if (input.value) {
+                display.innerText = `${calculateAge(input.value)} years old`;
+            } else {
+                display.innerText = '';
+            }
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const message = document.getElementById('toast-message');
+            
+            toast.className = `px-6 py-4 rounded-xl shadow-2xl text-white flex items-center gap-3 show ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+            icon.innerHTML = type === 'success' ? '<i data-lucide="check-circle" class="w-5 h-5"></i>' : '<i data-lucide="alert-triangle" class="w-5 h-5"></i>';
+            message.innerText = msg;
+            
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function showLoader(duration = 400) {
+            const loader = document.getElementById('loader');
+            loader.style.display = 'flex';
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    resolve();
+                }, duration);
+            });
+        }
+
+        function openLoginModal() {
+            document.getElementById('login-modal').classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('login-modal').classList.add('hidden');
+            document.getElementById('login-error').classList.add('hidden');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').classList.add('hidden');
+            showView('dashboard');
+        }
+
+        // ---------------------------------------------------------
+        // ACTION HANDLERS
+        // ---------------------------------------------------------
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('login-username').value;
+            const pass = document.getElementById('login-password').value;
+            const error = document.getElementById('login-error');
+
+            await showLoader(800);
+
+            const patients = getPatients();
+            const found = patients.find(p => p.username === user && p.passwordHash === hashPass(pass));
+
+            if (found) {
+                setCurrentUser(found.id);
+                closeLoginModal();
+                showView('dashboard');
+                showToast(`Welcome back, ${found.firstName}!`);
+            } else {
+                error.classList.remove('hidden');
+            }
+        }
+
+        function handleLogout() {
+            clearCurrentUser();
+            showView('landing');
+            showToast('You have been logged out.');
+        }
+
+        function handleRegistration(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = new FormData(form);
+            
+            // Clear errors
+            document.querySelectorAll('.error').forEach(p => p.innerText = '');
+
+            let hasErrors = false;
+
+            // Validate Mobile
+            const mobile = data.get('mobile');
+            if (!/^09\d{2}-\d{3}-\d{4}$/.test(mobile)) {
+                form.querySelector('[name="mobile"]').nextElementSibling.innerText = 'Format: 09XX-XXX-XXXX';
+                hasErrors = true;
+            }
+
+            // Validate Passwords Match
+            if (data.get('password') !== data.get('confirmPassword')) {
+                form.querySelector('[name="confirmPassword"]').nextElementSibling.innerText = 'Passwords do not match';
+                hasErrors = true;
+            }
+
+            // Validate Username Uniqueness
+            const patients = getPatients();
+            if (patients.some(p => p.username === data.get('username'))) {
+                form.querySelector('[name="username"]').nextElementSibling.innerText = 'Username already taken';
+                hasErrors = true;
+            }
+
+            if (hasErrors) return;
+
+            // Save Data
+            const year = new Date().getFullYear();
+            const randomId = Math.floor(1000 + Math.random() * 9000);
+            const patientId = `ICC-${year}-${randomId}`;
+
+            const newPatient = {
+                id: patientId,
+                username: data.get('username'),
+                passwordHash: hashPass(data.get('password')),
+                firstName: data.get('firstName'),
+                middleName: data.get('middleName'),
+                lastName: data.get('lastName'),
+                dob: data.get('dob'),
+                sex: data.get('sex'),
+                civilStatus: data.get('civilStatus'),
+                religion: data.get('religion'),
+                nationality: data.get('nationality'),
+                mobile: data.get('mobile'),
+                email: data.get('email'),
+                address: {
+                    house: data.get('house'),
+                    barangay: data.get('barangay'),
+                    city: data.get('city'),
+                    province: data.get('province')
+                },
+                emergency: {
+                    name: data.get('emergencyName'),
+                    number: data.get('emergencyNumber'),
+                    relationship: data.get('emergencyRelationship')
+                },
+                medical: {
+                    diagnosis: data.get('diagnosis'),
+                    diagnosisDate: data.get('diagnosisDate'),
+                    medications: data.get('medications'),
+                    allergies: data.get('allergies'),
+                    bloodType: data.get('bloodType')
+                },
+                insurance: {
+                    philhealth: data.get('philhealth'),
+                    hmo: data.get('hmo')
+                },
+                registeredAt: new Date().toISOString(),
+                profileComplete: 80 
+            };
+
+            patients.push(newPatient);
+            savePatients(patients);
+            setCurrentUser(patientId);
+
+            document.getElementById('new-patient-id').innerText = patientId;
+            document.getElementById('success-modal').classList.remove('hidden');
+        }
+
+        function updateUserProfileDisplay() {
+            const patients = getPatients();
+            const currentId = getCurrentUser();
+            const user = patients.find(p => p.id === currentId);
+            
+            if (user) {
+                document.getElementById('user-display-name').innerText = `${user.firstName} ${user.lastName}`;
+                document.getElementById('user-display-id').innerText = `ID: ${user.id}`;
+                document.getElementById('user-avatar').innerText = `${user.firstName[0]}${user.lastName[0]}`;
+            }
+        }
+
+        // ---------------------------------------------------------
+        // TAB RENDERING
+        // ---------------------------------------------------------
+
+        function renderTabContent(tabId, container) {
+            const patients = getPatients();
+            const currentId = getCurrentUser();
+            const user = patients.find(p => p.id === currentId);
+
+            if (!user) return;
+
+            switch(tabId) {
+                case 'profile':
+                    renderProfile(user, container);
+                    break;
+                case 'visits':
+                    renderVisits(currentId, container);
+                    break;
+                case 'appointments':
+                    renderAppointments(currentId, container);
+                    break;
+                case 'documents':
+                    renderDocuments(container);
+                    break;
+                case 'contact':
+                    renderContact(container);
+                    break;
+                default:
+                    renderProfile(user, container);
+            }
+        }
+
+        function renderProfile(user, container) {
+            const age = calculateAge(user.dob);
+            container.innerHTML = `
+                <div class="max-w-4xl">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 class="text-3xl font-extrabold text-slate-900">My Profile</h2>
+                            <p class="text-slate-500 font-medium">Keep your records updated for better care.</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-right">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status</p>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-extrabold rounded-full uppercase">Verified Patient</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="card p-6 mb-8 flex items-center gap-6">
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-sm font-bold text-slate-700">Profile Completion</p>
+                                <p class="text-sm font-extrabold text-brand-teal">${user.profileComplete}%</p>
+                            </div>
+                            <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                <div class="brand-teal h-full rounded-full" style="width: ${user.profileComplete}%"></div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 hidden sm:block max-w-[150px]">Please complete optional fields to reach 100%.</p>
+                    </div>
+
+                    <div class="space-y-8">
+                        <!-- PERSONAL -->
+                        <div class="card p-8">
+                            <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-teal-50 text-brand-teal rounded-lg flex items-center justify-center">
+                                        <i data-lucide="user" class="w-5 h-5"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-slate-900 uppercase tracking-wide">Personal Details</h3>
+                                </div>
+                                <button class="text-brand-teal font-bold text-sm hover:underline flex items-center gap-1">
+                                    <i data-lucide="edit-3" class="w-4 h-4"></i> Edit
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-y-8 gap-x-12">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Full Name</p>
+                                    <p class="font-bold text-slate-900">${user.firstName} ${user.middleName || ''} ${user.lastName}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Date of Birth</p>
+                                    <p class="font-bold text-slate-900">${user.dob} <span class="text-slate-400 font-medium ml-2">(${age} yrs)</span></p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Sex</p>
+                                    <p class="font-bold text-slate-900">${user.sex}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Civil Status</p>
+                                    <p class="font-bold text-slate-900">${user.civilStatus}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Religion</p>
+                                    <p class="font-bold text-slate-900">${user.religion || 'Not specified'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nationality</p>
+                                    <p class="font-bold text-slate-900">${user.nationality}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CONTACT -->
+                        <div class="card p-8">
+                            <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-teal-50 text-brand-teal rounded-lg flex items-center justify-center">
+                                        <i data-lucide="phone" class="w-5 h-5"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-slate-900 uppercase tracking-wide">Contact & Address</h3>
+                                </div>
+                                <button class="text-brand-teal font-bold text-sm hover:underline flex items-center gap-1">
+                                    <i data-lucide="edit-3" class="w-4 h-4"></i> Edit
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12 mb-8">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Mobile Number</p>
+                                    <p class="font-bold text-slate-900">${user.mobile}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email Address</p>
+                                    <p class="font-bold text-slate-900">${user.email}</p>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Home Address</p>
+                                    <p class="font-bold text-slate-900">${user.address.house}, ${user.address.barangay}, ${user.address.city}, ${user.address.province}</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                                <p class="text-xs font-bold text-slate-900 mb-4 flex items-center gap-2 uppercase tracking-wide">
+                                    <i data-lucide="alert-circle" class="w-4 h-4 text-brand-amber"></i> Emergency Contact
+                                </p>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Name</p>
+                                        <p class="font-bold text-slate-900">${user.emergency.name}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Number</p>
+                                        <p class="font-bold text-slate-900">${user.emergency.number}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Relationship</p>
+                                        <p class="font-bold text-slate-900">${user.emergency.relationship}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MEDICAL -->
+                        <div class="card p-8">
+                            <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-teal-50 text-brand-teal rounded-lg flex items-center justify-center">
+                                        <i data-lucide="activity" class="w-5 h-5"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-slate-900 uppercase tracking-wide">Medical Summary</h3>
+                                </div>
+                                <button class="text-brand-teal font-bold text-sm hover:underline flex items-center gap-1">
+                                    <i data-lucide="edit-3" class="w-4 h-4"></i> Edit
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12 mb-8">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Primary Diagnosis</p>
+                                    <p class="text-xl font-extrabold text-slate-900">${user.medical.diagnosis}</p>
+                                    <p class="text-xs text-slate-400 mt-1">Diagnosed on ${user.medical.diagnosisDate}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Blood Type</p>
+                                    <p class="text-xl font-extrabold text-[#e11d48]">${user.medical.bloodType}</p>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Current Medications</p>
+                                    <p class="font-medium text-slate-700">${user.medical.medications || 'None recorded'}</p>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Known Allergies</p>
+                                    <p class="font-bold text-red-600">${user.medical.allergies || 'No known allergies'}</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-100">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">PhilHealth Number</p>
+                                    <p class="font-bold text-slate-900">${user.insurance.philhealth || 'Not provided'}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">HMO Provider</p>
+                                    <p class="font-bold text-slate-900">${user.insurance.hmo || 'Not provided'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderVisits(patientId, container) {
+            const allVisits = getVisits();
+            const visits = allVisits.filter(v => v.patientId === patientId).sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            if (visits.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center p-12 text-center">
+                        <div class="w-32 h-32 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+                            <i data-lucide="clipboard-list" class="w-16 h-16 text-slate-300"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">My Visit History</h2>
+                        <p class="text-slate-500 max-w-sm mb-8">Your visit history will appear here after your first appointment at the center.</p>
+                        <button onclick="handleTabClick(event, 'appointments')" class="btn-teal px-8 py-3 rounded-xl font-bold">Request First Appointment</button>
+                    </div>
+                `;
+                return;
+            }
+
+            let rows = '';
+            visits.forEach(v => {
+                const statusColor = v.status === 'Completed' ? 'bg-green-100 text-green-700' : (v.status === 'Upcoming' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700');
+                rows += `
+                    <tr class="hover:bg-slate-50 transition-colors cursor-pointer" onclick="toggleVisitDetails('${v.id}')">
+                        <td class="px-6 py-4 font-bold text-slate-900">${v.date}</td>
+                        <td class="px-6 py-4 text-sm font-medium">${v.visitType}</td>
+                        <td class="px-6 py-4 text-sm text-slate-500">${v.physician}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 ${statusColor} text-[10px] font-extrabold rounded-full uppercase">${v.status}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <i data-lucide="chevron-down" id="icon-${v.id}" class="w-4 h-4 text-slate-400 inline-block transition-transform"></i>
+                        </td>
+                    </tr>
+                    <tr id="details-${v.id}" class="hidden bg-slate-50/50">
+                        <td colspan="5" class="px-8 py-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Treatment/Summary</p>
+                                    <p class="font-bold text-slate-800">${v.treatment}</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Physician Notes</p>
+                                    <p class="text-slate-600">${v.notes}</p>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="max-w-6xl">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                        <div>
+                            <h2 class="text-3xl font-extrabold text-slate-900">Visit History</h2>
+                            <p class="text-slate-500 font-medium">Review your past treatments and physician notes.</p>
+                        </div>
+                        <button onclick="window.print()" class="btn-teal px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+                             <i data-lucide="download" class="w-4 h-4"></i> Download Summary
+                        </button>
+                    </div>
+
+                    <div class="card overflow-hidden">
+                        <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex flex-wrap gap-4 items-center">
+                             <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Filter by:</span>
+                                <select class="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200 outline-none">
+                                    <option>All Status</option>
+                                    <option>Completed</option>
+                                    <option>Upcoming</option>
+                                    <option>Cancelled</option>
+                                </select>
+                             </div>
+                             <div class="flex items-center gap-2 ml-auto">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Sort:</span>
+                                <button class="text-xs font-bold text-brand-teal flex items-center gap-1">Newest First <i data-lucide="arrow-down-narrow-wide" class="w-3 h-3"></i></button>
+                             </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-slate-50/50">
+                                    <tr>
+                                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Date</th>
+                                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Visit Type</th>
+                                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Physician</th>
+                                        <th class="px-6 py-4 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Status</th>
+                                        <th class="px-6 py-4"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    ${rows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleVisitDetails(id) {
+            const row = document.getElementById(`details-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            row.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        }
+
+        function renderAppointments(patientId, container) {
+            const appointments = getAppointments().filter(a => a.patientId === patientId).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            let requestsHtml = '';
+            appointments.forEach(a => {
+                const statusColor = a.status === 'Confirmed' ? 'bg-green-100 text-green-700' : (a.status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700');
+                requestsHtml += `
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 flex items-center justify-between mb-3 shadow-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-slate-50 flex flex-col items-center justify-center rounded-xl font-bold">
+                                <span class="text-[10px] text-slate-400 leading-tight">${a.preferredDate.split('-')[1]}</span>
+                                <span class="text-lg text-slate-800 leading-tight">${a.preferredDate.split('-')[2]}</span>
+                            </div>
+                            <div>
+                                <p class="font-bold text-slate-900">${a.visitType}</p>
+                                <p class="text-xs text-slate-400 font-medium">${a.preferredDate} @ ${a.preferredTime}</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 ${statusColor} text-[10px] font-extrabold rounded-full uppercase">${a.status}</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl">
+                    <!-- LEFT: FORM -->
+                    <div class="lg:col-span-2 space-y-8">
+                        <div>
+                            <h2 class="text-3xl font-extrabold text-slate-900">Appointments</h2>
+                            <p class="text-slate-500 font-medium">Request your next visit or check status of requests.</p>
+                        </div>
+
+                        <div class="card p-8">
+                            <div class="flex items-center gap-3 mb-8 pb-4 border-b border-slate-100">
+                                <div class="w-10 h-10 bg-amber-50 text-brand-amber rounded-lg flex items-center justify-center">
+                                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                                </div>
+                                <h3 class="text-lg font-bold text-slate-900 uppercase tracking-wide">Request New Appointment</h3>
+                            </div>
+
+                            <form onsubmit="handleAppointmentRequest(event)" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 uppercase">Preferred Date</label>
+                                    <input type="date" name="preferredDate" required min="${new Date().toISOString().split('T')[0]}" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-[#0F6E56]">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-slate-500 uppercase">Preferred Time</label>
+                                    <select name="preferredTime" required class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none bg-white focus:ring-2 focus:ring-[#0F6E56]">
+                                        <option value="08:00 AM">08:00 AM</option>
+                                        <option value="09:00 AM">09:00 AM</option>
+                                        <option value="10:00 AM">10:00 AM</option>
+                                        <option value="11:00 AM">11:00 AM</option>
+                                        <option value="01:00 PM">01:00 PM</option>
+                                        <option value="02:00 PM">02:00 PM</option>
+                                        <option value="03:00 PM">03:00 PM</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1 md:col-span-2">
+                                    <label class="text-xs font-bold text-slate-500 uppercase">Visit Type</label>
+                                    <select name="visitType" required class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none bg-white focus:ring-2 focus:ring-[#0F6E56]">
+                                        <option value="Initial Consultation">Initial Consultation</option>
+                                        <option value="Follow-Up Visit">Follow-Up Visit</option>
+                                        <option value="Chemotherapy Session">Chemotherapy Session</option>
+                                        <option value="Lab Results Review">Lab Results Review</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1 md:col-span-2">
+                                    <label class="text-xs font-bold text-slate-500 uppercase">Notes / Concerns (Optional)</label>
+                                    <textarea name="notes" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none resize-none focus:ring-2 focus:ring-[#0F6E56]"></textarea>
+                                </div>
+                                <div class="md:col-span-2 pt-4">
+                                    <button type="submit" class="btn-teal w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2">
+                                        Submit Request <i data-lucide="send" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: REQUESTS LIST -->
+                    <div class="space-y-6">
+                        <h3 class="text-lg font-bold text-slate-900 uppercase tracking-wide">My Requests</h3>
+                        <div class="max-h-[600px] overflow-y-auto pr-1">
+                            ${requestsHtml || '<p class="text-center py-12 text-slate-400 font-medium bg-white rounded-2xl border-2 border-dashed border-slate-100">No requests yet.</p>'}
+                        </div>
+                        
+                        <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                             <div class="flex items-center gap-2 text-blue-700 mb-2">
+                                <i data-lucide="info" class="w-4 h-4"></i>
+                                <span class="text-xs font-bold uppercase tracking-widest">Process Note</span>
+                             </div>
+                             <p class="text-xs text-blue-600 leading-relaxed">Most requests are confirmed within 24 hours. You will receive a notification once confirmed.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function handleAppointmentRequest(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = new FormData(form);
+            const currentId = getCurrentUser();
+
+            await showLoader(600);
+
+            const apps = getAppointments();
+            const newApp = {
+                id: `APT-${Math.floor(1000 + Math.random() * 9000)}`,
+                patientId: currentId,
+                preferredDate: data.get('preferredDate'),
+                preferredTime: data.get('preferredTime'),
+                visitType: data.get('visitType'),
+                notes: data.get('notes'),
+                status: 'Pending',
+                createdAt: new Date().toISOString()
+            };
+
+            apps.push(newApp);
+            saveAppointments(apps);
+            
+            showToast('Appointment request submitted successfully!');
+            renderTabContent('appointments', document.getElementById('tab-content'));
+        }
+
+        function renderDocuments(container) {
+            container.innerHTML = `
+                <div class="max-w-4xl">
+                    <h2 class="text-3xl font-extrabold text-slate-900 mb-2">Documents</h2>
+                    <p class="text-slate-500 font-medium mb-8">Essential papers required for your treatment and insurance claims.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                        <div class="card p-8 group">
+                            <div class="w-12 h-12 bg-teal-50 text-brand-teal rounded-xl flex items-center justify-center mb-6 group-hover:brand-teal group-hover:text-white transition-all">
+                                <i data-lucide="file-check" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-4">Checklist for New Patients</h3>
+                            <ul class="space-y-4">
+                                <li class="flex items-start gap-3 text-sm text-slate-600 font-medium">
+                                    <i data-lucide="check" class="w-4 h-4 text-green-500 mt-0.5"></i>
+                                    PhilHealth Member Data Record (MDR)
+                                </li>
+                                <li class="flex items-start gap-3 text-sm text-slate-600 font-medium">
+                                    <i data-lucide="check" class="w-4 h-4 text-green-500 mt-0.5"></i>
+                                    Original & Photostat of Govt ID
+                                </li>
+                                <li class="flex items-start gap-3 text-sm text-slate-600 font-medium">
+                                    <i data-lucide="check" class="w-4 h-4 text-green-500 mt-0.5"></i>
+                                    Doctor's Referral Letter
+                                </li>
+                                <li class="flex items-start gap-3 text-sm text-slate-600 font-medium">
+                                    <i data-lucide="check" class="w-4 h-4 text-green-500 mt-0.5"></i>
+                                    Latest Lab Results & Biopsy Reports
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="card p-8 group">
+                            <div class="w-12 h-12 bg-amber-50 text-brand-amber rounded-xl flex items-center justify-center mb-6 group-hover:brand-amber group-hover:text-white transition-all">
+                                <i data-lucide="file-digit" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-4">Insurance & Claims</h3>
+                            <ul class="space-y-4">
+                                <li class="flex items-start gap-3 text-sm text-slate-600 font-medium">
+                                    <i data-lucide="check" class="w-4 h-4 text-amber-500 mt-0.5"></i>
+                                    PhilHealth Benefit Eligibility (PBEF)
+                                </li>
+                                <li class="flex items-start gap-3 text-sm text-slate-600 font-medium">
+                                    <i data-lucide="check" class="w-4 h-4 text-amber-500 mt-0.5"></i>
+                                    HMO Letter of Authorization (LOA)
+                                </li>
+                                <li class="flex items-start gap-3 text-sm text-slate-600 font-medium">
+                                    <i data-lucide="check" class="w-4 h-4 text-amber-500 mt-0.5"></i>
+                                    Z-Benfit Approval (if applicable)
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-brand-teal text-white p-10 rounded-[32px] relative overflow-hidden shadow-2xl shadow-teal-900/20">
+                        <div class="relative z-10 max-w-md">
+                            <h3 class="text-2xl font-bold mb-4">Questions about your documents?</h3>
+                            <p class="text-teal-100 mb-8 font-medium">Our records administrator is available M-F, 8AM to 4PM to assist you with filing and insurance requirements.</p>
+                            <button onclick="handleTabClick(event, 'contact')" class="bg-white text-brand-teal px-8 py-4 rounded-2xl font-bold flex items-center gap-2">
+                                Message Records Office <i data-lucide="message-square" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <i data-lucide="files" class="absolute right-[-40px] bottom-[-40px] w-64 h-64 opacity-10"></i>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderContact(container) {
+            container.innerHTML = `
+                <div class="max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div>
+                        <h2 class="text-3xl font-extrabold text-slate-900 mb-2">Help Center</h2>
+                        <p class="text-slate-500 font-medium mb-10">We're here to support you every step of the way.</p>
+
+                        <div class="space-y-4 mb-12">
+                            <div class="card p-4 flex items-center gap-4">
+                                <div class="w-12 h-12 bg-teal-50 text-brand-teal rounded-xl flex items-center justify-center shrink-0">
+                                    <i data-lucide="phone-call" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Main Hotline</p>
+                                    <p class="text-lg font-bold text-slate-900">(046) 434-2222</p>
+                                </div>
+                            </div>
+                            <div class="card p-4 flex items-center gap-4">
+                                <div class="w-12 h-12 bg-amber-50 text-brand-amber rounded-xl flex items-center justify-center shrink-0">
+                                    <i data-lucide="mail" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Support Email</p>
+                                    <p class="text-lg font-bold text-slate-900">care@imuschemocenter.com</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-bold text-slate-900 uppercase tracking-wide mb-6">Frequently Asked Questions</h3>
+                        <div class="space-y-3">
+                            ${[
+                                "What should I bring to my first session?",
+                                "Can I bring a companion?",
+                                "What insurance/HMO do you accept?",
+                                "How do I request medical certificates?",
+                                "Where is the clinic located?"
+                            ].map((q, i) => `
+                                <div class="bg-white rounded-xl border border-slate-100 overflow-hidden">
+                                    <button class="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-slate-50 transition-colors">
+                                        <span class="font-bold text-slate-800 text-sm">${q}</span>
+                                        <i data-lucide="plus" class="w-4 h-4 text-slate-400"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="card p-8 h-fit">
+                        <h3 class="text-lg font-bold text-slate-900 uppercase tracking-wide mb-6">Send a Quick Message</h3>
+                        <form onsubmit="handleMessage(event)" class="space-y-6">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-500 uppercase">Subject</label>
+                                <select required class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none bg-white">
+                                    <option>General Inquiry</option>
+                                    <option>Appointment Concern</option>
+                                    <option>Billing / PhilHealth</option>
+                                    <option>Medical Record Request</option>
+                                    <option>Feedback</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-500 uppercase">Message</label>
+                                <textarea required rows="6" placeholder="How can we help you today?" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none resize-none"></textarea>
+                            </div>
+                            <button type="submit" class="btn-teal w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-xl shadow-teal-900/10">
+                                Send Message <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function handleMessage(e) {
+            e.preventDefault();
+            await showLoader(800);
+            showToast('Message sent! Our team will respond within 24 hours.');
+            e.target.reset();
+        }
+
+        // ---------------------------------------------------------
+        // APP INITIALIZATION
+        // ---------------------------------------------------------
+
+        window.onload = () => {
+            seedData();
+            
+            const currentUser = getCurrentUser();
+            if (currentUser) {
+                showView('dashboard');
+            } else {
+                showView('landing');
+            }
+
+            // Sync hash updates
+            window.onhashchange = () => {
+                const user = getCurrentUser();
+                if (user) {
+                    const hash = window.location.hash.replace('#', '') || 'profile';
+                    showTab(hash);
+                }
+            };
+        };
+
+    </script>
+</body>
+</html>

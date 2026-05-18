@@ -1,0 +1,8 @@
+{
+  "name": "Imus Chemotherapy Center",
+  "description": "A comprehensive healthcare portal for patients to manage their chemotherapy visits, appointments, and medical records.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
